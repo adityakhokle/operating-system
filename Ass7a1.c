@@ -7,51 +7,57 @@ characters, number of words and number of lines in accepted sentences, writes th
 and writes the contents of the file on second pipe to be read by first process and displays onstandard
 output.
 */
+
+//sender pipe
+
 #include <stdio.h>
 #include <string.h>
-#include <stdlib.h>
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
 
-int main()
+int main() 
 {
-	int fd1, fd2;
+    int fd;
 
-	// FIFO file path
-	char *FIFO1 = "FIFO1";
-	char *FIFO2 = "FIFO2";
+    // FIFO file path
+    char *myfifo = "/tmp/myfifo";
 
-	// Creating the named file(FIFO)
-	// mkfifo(<pathname>, <permission>)
-	mkfifo(FIFO1, 0666);
-	mkfifo(FIFO2, 0666);
+    // Creating the named file(FIFO)
+    mkfifo(myfifo, 0666);
 
-	char arr1[80], arr2[80];
-	while (1)
-	{
-		// Open FIFO for write only
-		fd1 = open(FIFO1, O_WRONLY);
+    char sentence[100];//buffer to store the users input
 
-		// Take an input arr2ing from user.
-		// 80 is maximum length
-		fgets(arr2, 80, stdin);
+    while (1)
+     {
+        //taking input till user wants
+        // Open FIFO for write only
+        fd = open(myfifo, O_WRONLY);
 
-		// Write the input arr2ing on FIFO
-		// and close it
-		write(fd1, arr2, strlen(arr2) + 1);
-		close(fd1);
+        // Take an input sentence from the user
+        printf(" \n\n >> Enter a sentence (or exit to end this process): ");
+        fgets(sentence, sizeof(sentence), stdin);//taking standard input from user(keyboard)
 
-		// Open FIFO for Read only
-		fd2 = open(FIFO2, O_RDONLY);
+        // Check if the user wants to exit
+        if (strcmp(sentence, "exit\n") == 0) 
+        {
+            break; // Exit the loop
+        }
 
-		// Read from FIFO
-		read(fd2, arr1, sizeof(arr1));
+        // Write the input sentence on the FIFO
+        write(fd, sentence, strlen(sentence) + 1);//null terminator charector
+        close(fd);
 
-		// Print the read message
-		printf("User2: %s\n", arr1);
-		close(fd2);
-	}
-	return 0;
+        // Now open FIFO for read only to get the response
+        fd = open(myfifo, O_RDONLY);
+
+        // Read and display the response of the receiver in  sender(pipe1) terminal
+        read(fd, sentence, sizeof(sentence));
+        printf("\n --> Receiver's Response: \n\n %s \n", sentence);
+
+        close(fd);//closing the file descripter
+    }
+
+    return 0;
 }
