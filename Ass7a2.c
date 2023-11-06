@@ -7,72 +7,85 @@ characters, number of words and number of lines in accepted sentences, writes th
 and writes the contents of the file on second pipe to be read by first process and displays onstandard
 output.
 */
+
+
+//reciever pipe
+
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
 
-int main()
+int main() 
 {
-	int fd3, fd4;
-	int words, lines, characters, len, i;
-	char ch;
-	FILE *fp;
+    int fd;
+    FILE *outputFile;
 
-	// FIFO file path
-	char *FIFO1 = "FIFO1";
-	char *FIFO2 = "FIFO2";
-	// Creating the named file(FIFO)
-	// mkfifo(<pathname>,<permission>)
-	// mkfifo(myfifo, 0666);
-	mkfifo(FIFO1, 0666);
-	mkfifo(FIFO2, 0666);
-	char str1[80];
-	while (1)
-	{
-		// First open in read only and read
-		fd3 = open(FIFO1, O_RDONLY);
-		read(fd3, str1, 80);
+    // FIFO file path
+    char *myfifo = "/tmp/myfifo";
 
-		// Print the read string and close
-		printf("User1: %s\n", str1);
-		len = strlen(str1);
-		words = 0;
-		lines = 0;
-		characters = 0;
-		for (i = 0; i < len; i++)
-		{
-			if (str1[i] == ' ' || str1[i] == '.')
-			{
-				words++;
-			}
-			if (str1[i] == '.')
-			{
-				lines++;
-			}
-		}
-		characters = (strlen(str1)) - 1;
+    // Creating the named file(FIFO)
+    mkfifo(myfifo, 0666);
 
-		close(fd3);
+    char sentence[100];
 
-		// Now open in write mode and write
-		// string taken from user.
-		fp = fopen("a.txt", "w+");
-		fprintf(fp, "\nNo. of Lines are: %d\n", lines);
-		fprintf(fp, "\nNo. of words are: %d\n", words);
-		fprintf(fp, "\nNo. of characters are: %d\n", characters);
+    while (1) 
+     {
+        // Open FIFO for read only
+        fd = open(myfifo, O_RDONLY);
 
-		fclose(fp);
-		close(fd3);
+        // Read the sentence from the sender
+        read(fd, sentence, sizeof(sentence));
 
-		fd4 = open(FIFO2, O_WRONLY);
-		system("cat a.txt>FIFO2");
-		// fgets(str2, 80, stdin);
-		// write(fd4, str2, strlen(str2)+1);
-		close(fd4);
-	}
-	return 0;
+        if (strcmp(sentence, "exit\n") == 0) 
+        {
+            break; // Exit the loop if the sender wants to quit
+        }
+
+        // Process the sentence (count characters, words, lines)
+        // Calculate counts
+        int char_count = strlen(sentence); // Character count
+        int word_count = 0; // Word count
+        int line_count = 1; // Initialize line count
+
+        for (int i = 0; sentence[i] != '\0'; i++)
+        {
+ 
+            if (sentence[i] == ' ' || sentence[i] == '\t' || sentence[i] == '\n') 
+            {
+                word_count++;
+            }
+
+            if (sentence[i] == '\n') 
+            {
+                line_count++;
+            }
+        }
+
+        // Prepare the response
+        snprintf(sentence, sizeof(sentence), " >> Character Count: %d\n >> Word Count :: %d\n >> Line Count :: %d", char_count, word_count + 1, line_count - 1);
+
+        // opening  FIFO for write only to send the response
+        fd = open(myfifo, O_WRONLY);
+
+        // Write the response to the FIFO
+        write(fd, sentence, strlen(sentence) + 1);
+
+        close(fd);
+
+        // Print the response in the receiver's terminal
+        printf("\n\n --> Receiver's Response: \n\n %s \n", sentence);
+
+        // Write the response to an output file
+        outputFile = fopen("Record.txt", "a"); // Append mode
+        if (outputFile != NULL)
+        {
+            fprintf(outputFile, "%s\n", sentence);
+            fclose(outputFile);
+        }
+    }
+
+    return 0;
 }
