@@ -1,10 +1,3 @@
-/*
-Assignment No 4b
-B. Thread synchronization and mutual exclusion using mutex. 
-Application to demonstrate: Reader-
-Writer problem with reader priority.
-*/
-
 #include<stdio.h>
 #include<stdlib.h>
 #include<pthread.h>
