@@ -1,8 +1,3 @@
-/*
-Assignment No. 5: 
-Implement the C program for Deadlock Avoidance Algorithm:  Bankers Algorithm.
-*/
-
 
 #include <stdio.h>
 
