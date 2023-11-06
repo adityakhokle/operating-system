@@ -9,11 +9,12 @@ using any sorting algorithm. Also demonstrate zombie and orphan states.
 #include <sys/wait.h>
 #include <unistd.h>
 
+// Function to perform Bubble Sort on an array
 void childprocess(int n , int arr[]){
-  //bubble sort  
+  // Bubble sort algorithm
   for(int i=0;i<n;i++){
     for(int j=i+1 ; j<n;j++){
-      if(arr[i]>arr[j]){
+      if(arr[i]>arr[j]){                 // Swap elements if they are in the wrong order
          int temp=arr[i];
          arr[i]=arr[j];
          arr[j]=temp;
@@ -21,6 +22,7 @@ void childprocess(int n , int arr[]){
    }
  }
 }
+// Function to perform Quick Sort on an array
  // Quick Sort function
 void parentprocess(int arr[], int low, int high)
 {
@@ -30,21 +32,22 @@ void parentprocess(int arr[], int low, int high)
           i=low;
           j=high;
           while(i<j){
-             while(arr[i]<=arr[pivot] && i<high){
+             while(arr[i]<=arr[pivot] && i<high){            // Find elements smaller than or equal to pivot
                 i++;
              }
-             while(arr[j]>arr[pivot]){
+             while(arr[j]>arr[pivot]){                     // Find elements greater than pivot
                 j--;
              }
-             if(i<j){
+             if(i<j){                                       // Swap elements if they are in the wrong order
                temp=arr[i];
                arr[i]=arr[j];
                arr[j]=temp;
              }
           }
-          temp=arr[pivot];
+          temp=arr[pivot];                                 // Swap the pivot element with the element at position j
           arr[pivot]=arr[j];
           arr[j]=temp;
+ // Recursively sort the two sub-arrays
           parentprocess(arr,low,j-1);
           parentprocess(arr,j+1,high);
        }
@@ -53,37 +56,40 @@ void parentprocess(int arr[], int low, int high)
 int main(void){
  
   int n;
-  
+
+	// Input the number of elements to be sorted
   printf("Enter the Number of elements:\n");
   scanf("%d",&n);
   
   int arr[n];
-  printf("Enter the Numbers:\n");
+  printf("Enter the Numbers:\n");            // Input the array elements
   for(int i=0;i<n;i++){
      scanf("%d",&arr[i]);
 } 
   int p;
-  p=fork();
-  if(p==-1){
+  p=fork();                             // Create a child process using fork()
+  if(p==-1){                            // Handle the fork() error case
     printf("There is an error while calling fork()\n");
     }
   if(p==0){
+// Code executed in the child process (Bubble Sort)
     printf("We are in the child process (Bubble Sort) \n");
-    printf("child  => PID:%d\n",getpid());
-    printf("Parent => PID: %d\n", getppid());
-    childprocess(n,arr);
+    printf("child  => PID:%d\n",getpid());  // Print child process ID
+    printf("Parent => PID: %d\n", getppid());  // Print parent process ID
+    childprocess(n,arr);   // Call Bubble Sort function
     for(int i=0 ;i<n;i++){
-    printf("%d\n",arr[i]);
+    printf("%d\n",arr[i]);    // Print the sorted array
    
   }
     }
   else{
-     wait(NULL);
+ // Code executed in the parent process (Quick Sort)
+     wait(NULL);  // Wait for the child process to complete
      printf("We are in the parent process (Quick sort)\n");
-     printf("Parent => PID: %d\n", getpid());
-     parentprocess(arr,0,n-1);
+     printf("Parent => PID: %d\n", getpid());   // Print parent process ID
+     parentprocess(arr,0,n-1);   // Call Quick Sort function
      for(int i=0 ;i<n;i++){
-     printf("%d\n",arr[i]);
+     printf("%d\n",arr[i]);   // Print the sorted array
    
   }
  }
