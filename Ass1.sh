@@ -6,8 +6,10 @@
 # e) Modify a record. 
 # f) Exit
 
-
+# Define the address book file path
 address_book="address_book.txt"
+
+# Function to print the address book menu
 
 function print_menu {
     echo "Address Book Menu:"
@@ -19,6 +21,7 @@ function print_menu {
     echo "6) Exit"
 }
 
+# Function to view the contents of the address book
 function view_address_book {
     if [ -s "$address_book" ]; then
         cat "$address_book"
@@ -26,6 +29,8 @@ function view_address_book {
         echo "No records found in the address book."
     fi
 }
+
+# Function to insert a new record into the address book
 
 function insert_record {
     read -p "Enter student roll number: " roll_number
@@ -36,6 +41,7 @@ function insert_record {
     echo "Record inserted."
 }
 
+# Function to delete a record from the address book
 function delete_record {
     if [ -s "$address_book" ]; then
         read -p "Enter student roll number to delete: " roll_number
@@ -51,6 +57,7 @@ function delete_record {
     fi
 }
 
+# Function to modify a record in the address book
 function modify_record {
     if [ -s "$address_book" ]; then
         read -p "Enter student roll number to modify: " roll_number
@@ -69,6 +76,7 @@ function modify_record {
     fi
 }
 
+# Function to search for a record in the address book
 function search_record {
     if [ -s "$address_book" ]; then
         read -p "Enter student roll number or class to search: " search_term
@@ -82,6 +90,7 @@ function search_record {
     fi
 }
 
+# Main loop to display the menu and handle user input
 while :
 do
     print_menu
