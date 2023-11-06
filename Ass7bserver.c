@@ -6,6 +6,9 @@ Client and Server Programs in which server process creates a shared memory segme
 message to the shared memory segment. Client process reads the message from the shared memory
 segment and displays it to the screen.
 */
+
+//Server
+
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
