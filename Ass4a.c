@@ -5,89 +5,76 @@ A. Thread synchronization using counting semaphores.
 consumer problem with counting semaphores and mutex.
 */
 
-#include<stdio.h>
-#include<semaphore.h>
-#include<sys/types.h>
-#include<pthread.h>
-#include<unistd.h>
-#include<stdlib.h>
+#include <stdio.h>
+#include <pthread.h>
+#include <stdlib.h>
+#include <semaphore.h>
+#include <unistd.h>
 
-#define BUFFER_SIZE 10
+typedef struct
+{
+        int buff[20];
+        sem_t full, empty;
 
+} shared;
+
+shared sh;
+int item;
+int in = 0, out = 0;
 pthread_mutex_t mutex;
-pthread_t tid;
-sem_t empty,full;
-int buffer[BUFFER_SIZE];
-int counter;
-void *producer();
-void *consumer();
-void insert_item(int);
-int remove_item();
-
-
-void initilize()
-{
-	pthread_mutex_init(&mutex,NULL);
-	sem_init(&full,0,0);
-	sem_init(&empty,0,BUFFER_SIZE);
-}
-
-void insert_item(int item)
-{
- 	buffer[counter++]=item;
-}
-
-
-
-int remove_item()
-{
- 	return buffer[--counter];
-}
-
 
 void *producer()
 {
-	 int item,wait_time;
-	 wait_time=rand()%5;
-	 sleep(wait_time);
-	 item=rand()%10 ;
-	 sem_wait(&empty);
-	 pthread_mutex_lock(&mutex); 
-	 printf("Producer produce %d\n\n",item);
-	 insert_item(item);
-	 pthread_mutex_unlock(&mutex);
-	 sem_post(&full);
+        int ptid;
+        int k = 0;
+        while (k < 5)
+        {
+                item = rand() % 100;
+                sem_wait(&sh.empty);
+                pthread_mutex_lock(&mutex);
+
+                sh.buff[in++] = item;
+                printf("\nproducer item:%d\n", item);
+                pthread_mutex_unlock(&mutex);
+                sem_post(&sh.full);
+                sleep(2);
+                k++;
+        }
+        exit(0);
 }
 
 void *consumer()
 {
-	 int item,wait_time;
-	 wait_time=rand()%5;
-	 sleep(wait_time);
-	 sem_wait(&full);
-	 pthread_mutex_lock(&mutex);
-	 item=remove_item();
-	 printf("Consumer consume %d\n\n",item);
-	 pthread_mutex_unlock(&mutex);
-	 sem_post(&empty);
-}
+        int ctid;
+        while (1)
+        {
+                while (out <= in)
+                {
+                        sem_wait(&sh.full);
+                        pthread_mutex_lock(&mutex);
+                        item = sh.buff[out++];
+                        printf("\nconsumer item:%d\n", item);
 
+                        pthread_mutex_unlock(&mutex);
+                        sem_post(&sh.empty);
+                        sleep(2);
+                }
+        }
+}
 
 int main()
 {
-	 int n1,n2;
-	 int i;
-	 printf("Enter number of Producers");
-	 scanf("%d",&n1);
-	 printf("Enter number of Consumers");
-	 scanf("%d",&n2);
-	 initilize();
-	 for(i=0;i<n1;i++)
-	  pthread_create(&tid,NULL,producer,NULL);
-	 for(i=0;i<n2;i++)
-	  pthread_create(&tid,NULL,consumer,NULL);
-	 sleep(5);
-	 exit(0);
+        pthread_t ptid1, ctid1;
+        sem_init(&sh.empty, 0, 20);
+        sem_init(&sh.full, 0, 0);
+        pthread_mutex_init(&mutex, NULL);
+
+        pthread_create(&ptid1, NULL, producer, NULL);
+        // pthread_create(&ptid2,NULL,producer,NULL);
+        pthread_create(&ctid1, NULL, consumer, NULL);
+
+        pthread_join(ptid1, NULL);
+        pthread_join(ctid1, NULL);
+
+        return 0;
 }
-
-
