@@ -1,3 +1,10 @@
+/*
+Assignment No.4 A
+A. Thread synchronization using counting semaphores.
+ Application to demonstrate: producer-
+consumer problem with counting semaphores and mutex.
+*/
+
 #include<stdio.h>
 #include<semaphore.h>
 #include<sys/types.h>
