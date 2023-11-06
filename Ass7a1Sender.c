@@ -19,7 +19,7 @@ output.
 
 int main() 
 {
-    int fd;
+    int fd;  
 
     // FIFO file path
     char *myfifo = "/tmp/myfifo";
