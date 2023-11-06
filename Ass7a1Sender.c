@@ -25,7 +25,7 @@ int main()
     char *myfifo = "/tmp/myfifo";
 
     // Creating the named file(FIFO)
-    mkfifo(myfifo, 0666);
+    mkfifo(myfifo, 0666);   // read write execute
 
     char sentence[100];//buffer to store the users input
 
